@@ -10,7 +10,7 @@ namespace classes\Connect;
 
 
 abstract class ConnectDB {
-	public static function connect() : mixed {
+	public static function connect() {
 		try {
 			$pdo = new \PDO('pgsql:host=localhost;dbname=accounting','jack','Alxi9mik');
 			return $pdo;
