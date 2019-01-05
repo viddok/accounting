@@ -38,4 +38,11 @@ class Users {
 			return false;
 		}
 	}
+
+	/**
+	 * @return mixed
+	 */
+	public function getCollection() {
+		return $this->collection;
+	}
 }
