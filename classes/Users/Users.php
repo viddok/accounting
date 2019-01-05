@@ -8,15 +8,15 @@
 
 namespace classes\Users;
 
-use classes\Users\User\User;
 use classes\Connect\ConnectDB;
+use classes\Users\User\User;
 
 class Users {
 	private $collection;
 
 	private function __construct( array $users ) {
-		foreach ( $users as $user) {
-			$this->collection[$user['id']] = User::create_user($user['id']);
+		foreach ( $users as $user ) {
+			$this->collection[ $user['id'] ] = User::create_user( $user['id'] );
 		}
 	}
 
@@ -26,17 +26,15 @@ class Users {
 		if ( false === $connect ) {
 			return false;
 		} else {
-			$query = 'SELECT
-							id
-						FROM
-							users';
+			$query = 'SELECT id FROM users';
 
 			$usr   = $connect->query( $query );
-			$users  = $usr->fetchAll( \PDO::FETCH_ASSOC );
-			unset($connect);
+			$users = $usr->fetchAll( \PDO::FETCH_ASSOC );
+			unset( $connect );
 			if ( ! empty( $users ) ) {
 				return new self( $users );
 			}
+
 			return false;
 		}
 	}
