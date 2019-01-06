@@ -1,0 +1,17 @@
+.top-menu {
+    position: absolute;
+    top: 0;
+    width: 60%;
+}
+.wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center
+}
+.content {
+    width: 500px;
+    height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center
+}
