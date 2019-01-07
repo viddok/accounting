@@ -11,11 +11,11 @@ $error = '';
 if ( isset($_POST['user_id']) ) {
 	if ( is_numeric( $_POST['user_id'] ) ) {
 		foreach ($users->getCollection() as $user) {
-			if ( $_POST['user_id'] == $user->id ) {
+			if ( $_POST['user_id'] == $user->getId() ) {
 				$current_user = array(
-					'id' => $user->id,
-					'name' => $user->name,
-					'role' => $user->role,
+					'id' => $user->getId(),
+					'name' => $user->getName(),
+					'role' => $user->getRole(),
 				);
 
 				$_SESSION['current_user'] = $current_user;
@@ -60,7 +60,7 @@ if ( isset($_POST['user_id']) ) {
                 <select name='user_id'>
                     <?php
                     foreach ($users->getCollection() as $user) {
-                        echo "<option value='$user->id'>$user->name</option>";
+                        echo "<option value='{$user->getId()}'>{$user->getName()}</option>";
                     }
                     ?>
                 </select>
