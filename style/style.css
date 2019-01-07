@@ -5,7 +5,7 @@ html, body {
     overflow: hidden;
 }
 body {
-    overflow: hidden; /* добавить полосу прокрутки */
+    overflow: auto; /* добавить полосу прокрутки */
     background-color: cornsilk;
     display: flex;
     /*align-items: center;*/
@@ -76,4 +76,21 @@ select {
 
 .content .container {
     margin: 20px;
+}
+
+.block {
+    text-align: left;
+    border-bottom: 1px grey solid;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+label span {
+    display: inline-block;
+    min-width: 200px;
 }
