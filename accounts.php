@@ -38,12 +38,14 @@ $count          = 1;
 $accounts_table = '';
 if ( is_admin() ) {
 	foreach ( $accounts->getCollection() as $account ) {
+		/* @var $account Account */
 		$user           = User::create_user( $account->getUserId() );
 		$accounts_table .= create_accounts_table( $account, $user, $count );
 		$count ++;
 	}
 } else {
 	foreach ( $accounts->getCollection() as $account ) {
+		/* @var $account Account */
 		$user = User::create_user( $account->getUserId() );
 		if ( $_SESSION['current_user']['id'] === $user->getId() ) {
 			$accounts_table .= create_accounts_table( $account, $user, $count );
@@ -144,6 +146,7 @@ if ( isset( $_POST['user_id'] ) && isset( $_POST['title'] ) && isset( $_POST['ba
                     <select name="account_1st">
                         <?php
                         foreach ( $accounts->getCollection() as $account ) {
+	                        /* @var $account Account */
 	                        $user = User::create_user( $account->getUserId() );
 	                        if ( is_admin() ) {
 		                        echo "<option value='{$account->getId()}'>{$account->getTitle()}</option>";
@@ -160,6 +163,7 @@ if ( isset( $_POST['user_id'] ) && isset( $_POST['title'] ) && isset( $_POST['ba
                     <select name="account_2nd">
 			            <?php
 			            foreach ( $accounts->getCollection() as $account ) {
+				            /* @var $account Account */
 				            $user = User::create_user( $account->getUserId() );
                             echo "<option value='{$account->getId()}'>{$user->getName()}/{$account->getTitle()}</option>";
 			            }
