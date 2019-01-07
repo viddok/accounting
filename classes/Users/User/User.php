@@ -49,10 +49,24 @@ class User {
 		}
 	}
 
-	public function __get( $field ) {
-		if ( isset( $this->$field)) {
-			return $this->$field;
-		}
-		return false;
+	/**
+	 * @return mixed
+	 */
+	public function getId() {
+		return $this->id;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getName(): string {
+		return $this->name;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getRole(): string {
+		return $this->role;
 	}
 }
