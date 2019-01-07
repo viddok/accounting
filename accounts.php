@@ -13,58 +13,33 @@ use classes\Accounts\Account\Account;
 use classes\Accounts\Accounts;
 use classes\Users\User\User;
 
-$accounts = Accounts::create_collection(); //Объекта коллекции счетов
-
-/* Создание таблицы счетов */
-function create_accounts_table( Account $account, User $user, int $count ) {
-	$accounts_table = '';
-	$credit_text    = ( $account->getbalance() - $account->getDefaultBalance() >= 0 ) ? 'Нет задолженности' : abs( $account->getbalance() - $account->getDefaultBalance() );
-	$text           = ( 0 === $account->getDefaultBalance() ) ? '-' : $credit_text;
-
-	$accounts_table .= '<tr>';
-	$accounts_table .= "<td>$count</td>";
-	$accounts_table .= "<td>{$account->getTitle()}</td>";
-	if ( is_admin() ) {
-		$accounts_table .= "<td>{$user->getName()}</td>";
-	}
-	$accounts_table .= "<td>{$account->getbalance()}</td>";
-	$accounts_table .= "<td>$text</td>";
-	$accounts_table .= '</tr>';
-
-	return $accounts_table;
-}
-
-$count          = 1;
-$accounts_table = '';
-if ( is_admin() ) {
-	foreach ( $accounts->getCollection() as $account ) {
-		/* @var $account Account */
-		$user           = User::create_user( $account->getUserId() );
-		$accounts_table .= create_accounts_table( $account, $user, $count );
-		$count ++;
-	}
-} else {
-	foreach ( $accounts->getCollection() as $account ) {
-		/* @var $account Account */
-		$user = User::create_user( $account->getUserId() );
-		if ( $_SESSION['current_user']['id'] === $user->getId() ) {
-			$accounts_table .= create_accounts_table( $account, $user, $count );
-			$count ++;
-		}
-	}
-}
-/* /Создание таблицы счетов */
+/** @var string */
+$errors = null;
 
 if ( isset( $_POST['user_id'] ) && 1 === count( $_POST ) ) {
 	$accounts[] = Account::get_account( $_POST['user_id'] );
 }
 
+// Обработка денежного перевода
 if ( isset( $_POST['account_1st'] ) && isset( $_POST['account_2nd'] ) && isset( $_POST['sum'] ) && is_numeric( $_POST['sum'] ) ) {
 	$account = Account::get_account( $_POST['account_1st'] );
 	$account->money_order( $_POST['account_2nd'], $_POST['sum'] );
 
 	header( 'location: accounts.php' );
 	exit();
+}
+
+// Обработчик пополнения счёта
+if ( isset( $_POST['operation'])) {
+	if ( 'top-up-balance' === $_POST['operation'] ) {
+		if ( is_numeric( $_POST['goal-account'] ) && is_numeric( $_POST['sum'] ) ) {
+			$account = Account::get_account( $_POST['goal-account'] );
+			$account->top_up_account( $_POST['sum'] );
+
+			header( 'location: accounts.php' );
+			exit();
+		}
+	}
 }
 
 if ( isset( $_POST['user_id'] ) && isset( $_POST['title'] ) && isset( $_POST['balance'] ) && isset( $_POST['default_balance'] ) ) {
@@ -85,6 +60,46 @@ if ( isset( $_POST['user_id'] ) && isset( $_POST['title'] ) && isset( $_POST['ba
 	exit();
 }
 
+/* Создание таблицы счетов */
+function create_accounts_table( Account $account, User $user, int $count ) {
+	$accounts_table = '';
+	$credit_text    = ( $account->getbalance() - $account->getDefaultBalance() >= 0 ) ? 'Нет задолженности' : abs( $account->getbalance() - $account->getDefaultBalance() );
+	$text           = ( 0 === $account->getDefaultBalance() ) ? '-' : $credit_text;
+
+	$accounts_table .= '<tr>';
+	$accounts_table .= "<td>$count</td>";
+	$accounts_table .= "<td>{$account->getTitle()}</td>";
+	if ( is_admin() ) {
+		$accounts_table .= "<td>{$user->getName()}</td>";
+	}
+	$accounts_table .= "<td>{$account->getbalance()}</td>";
+	$accounts_table .= "<td>$text</td>";
+	$accounts_table .= '</tr>';
+
+	return $accounts_table;
+}
+
+$accounts = Accounts::create_collection(); //Объекта коллекции счетов
+$count          = 1;
+$accounts_table = '';
+if ( is_admin() ) {
+	foreach ( $accounts->getCollection() as $account ) {
+		/* @var $account Account */
+		$user           = User::create_user( $account->getUserId() );
+		$accounts_table .= create_accounts_table( $account, $user, $count );
+		$count ++;
+	}
+} else {
+	foreach ( $accounts->getCollection() as $account ) {
+		/* @var $account Account */
+		$user = User::create_user( $account->getUserId() );
+		if ( $_SESSION['current_user']['id'] === $user->getId() ) {
+			$accounts_table .= create_accounts_table( $account, $user, $count );
+			$count ++;
+		}
+	}
+}
+/* /Создание таблицы счетов */
 ?>
 
 
@@ -159,7 +174,7 @@ if ( isset( $_POST['user_id'] ) && isset( $_POST['title'] ) && isset( $_POST['ba
                         ?>
                     </select>
                 </label>
-                <label><span>Конечный счёт:</span>
+                <label><span>Целевой счёт:</span>
                     <select name="account_2nd">
 			            <?php
 			            foreach ( $accounts->getCollection() as $account ) {
@@ -176,6 +191,35 @@ if ( isset( $_POST['user_id'] ) && isset( $_POST['title'] ) && isset( $_POST['ba
                 <input type="submit" value="Перевести">
             </form>
             </div>
+
+            <div class="block">
+                <h4>Пополнить балланс</h4>
+                <form method="post">
+                    <label><span>Целевой счёт:</span>
+                        <select name="goal-account">
+				            <?php
+				            foreach ( $accounts->getCollection() as $account ) {
+					            /* @var $account Account */
+					            $user = User::create_user( $account->getUserId() );
+					            if ( is_admin() ) {
+						            echo "<option value='{$account->getId()}'>{$account->getTitle()}</option>";
+					            } else {
+						            if ( $_SESSION['current_user']['id'] === $user->getId() ) {
+							            echo "<option value='{$account->getId()}'>{$account->getTitle()}</option>";
+						            }
+					            }
+				            }
+				            ?>
+                        </select>
+                    </label>
+                    <label><span>Сумма пополнения:</span>
+                        <input type="text" name="sum" size="28">
+                    </label>
+                    <input type="hidden" name="operation" value="top-up-balance">
+                    <input type="submit" value="Пополнить">
+                </form>
+            </div>
+
 	        <?php if ( is_admin() ): ?>
             <div class="block">
                 <h4>Создать счёт</h4>
