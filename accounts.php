@@ -12,6 +12,7 @@ forwarding_auth();
 use classes\Accounts\Account\Account;
 use classes\Accounts\Accounts;
 use classes\Users\User\User;
+use classes\Log\AccountLog;
 
 /** @var string */
 $errors = null;
@@ -34,7 +35,7 @@ if ( isset( $_POST['operation'])) {
 	if ( 'top-up-balance' === $_POST['operation'] ) {
 		if ( is_numeric( $_POST['goal-account'] ) && is_numeric( $_POST['sum'] ) ) {
 			$account = Account::get_account( $_POST['goal-account'] );
-			$account->top_up_account( $_POST['sum'] );
+			$account->top_up_account( $_POST['sum'], $_POST['description'] );
 
 			header( 'location: accounts.php' );
 			exit();
@@ -100,6 +101,9 @@ if ( is_admin() ) {
 	}
 }
 /* /Создание таблицы счетов */
+
+/* Подлкючение Логов */
+$log = new AccountLog();
 ?>
 
 
@@ -215,6 +219,9 @@ if ( is_admin() ) {
                     <label><span>Сумма пополнения:</span>
                         <input type="text" name="sum" size="28">
                     </label>
+                    <label><span>Краткое описание:</span>
+                        <input type="text" name="description" size="28">
+                    </label>
                     <input type="hidden" name="operation" value="top-up-balance">
                     <input type="submit" value="Пополнить">
                 </form>
@@ -240,6 +247,26 @@ if ( is_admin() ) {
                 </form>
             </div>
 	        <?php endif; ?>
+
+            <div class="block log">
+                <table border="1" cellspacing="0" width="100%">
+                    <tbody>
+                    <tr>
+                        <td>ID</td>
+                        <td>Дата</td>
+                        <td>Владелец</td>
+                        <td>Счёт</td>
+                        <td>Операция</td>
+                        <td>Сумма</td>
+                        <td>Описание</td>
+                    </tr>
+			        <?php
+			        echo $log->render();
+			        ?>
+                    </tbody>
+                </table>
+            </div>
+
         </div>
 
     </div>
