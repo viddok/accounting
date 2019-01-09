@@ -26,13 +26,8 @@ forwarding_auth();
 		?>
     </div>
     <div class="content">
-        <nav class="nav top-nav">
-            <ul>
-                <li><a href="accounts.php">Мои счета</a></li>
-                <li><a href="">Пунтк 2</a></li>
-                <li><a href="">Пункт 3</a></li>
-            </ul>
-        </nav>
+        <!--Главное меню-->
+	    <?php require_once 'templates/main-menu.php'; ?>
 
     </div>
 </div>
