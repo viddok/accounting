@@ -113,8 +113,34 @@ class MonthlyPlan {
 		return false;
 	}
 
-	public function set_sum(){ // Назначает сумму указанной категории
+	public function set_sum( int $id, float $sum ): bool { // Назначает сумму указанной категории
 
+		foreach ( $this->categories as $key => $category ) {
+			if ( $category['id'] == $id ) { // Проверка Наличия категории
+				$query = 'UPDATE plan SET sum = :sum WHERE id = :id';
+				$args  = array(
+					':id'  => $id,
+					':sum' => $sum,
+				);
+
+				try {
+					$tmp = $this->connect->prepare( $query );
+					if ( ! $tmp->execute( $args ) ) { // Обновление суммы в базе данных
+						return false;
+					}
+				} catch ( \PDOException $e ) {
+					echo 'Ошибка выполнения запроса ' . $e->getMessage();
+
+					return false;
+				}
+
+				$this->categories[ $key ]['sum'] = $sum; // Обновление суммы в объекте
+
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	public function copy_previous_plan(){ // Копирует план с предыдущего месяца
