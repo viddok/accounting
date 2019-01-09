@@ -78,8 +78,39 @@ class MonthlyPlan {
 		return false;
 	}
 
-	public function delete_category(){ // Удаляет выбранную категорию
+	public function delete_category( int $id ): bool { // Удаляет выбранную категорию
+		$true_id      = false; //статус наличия удаляемой категории
+		$category_key = null; // ключ удаляемой категории
 
+		foreach ( $this->categories as $key => $category ) { // Проверка на добавление дубликата
+			if ( $category['id'] == $id ) {
+				$true_id      = true;
+				$category_key = $key;
+			}
+		}
+
+		if ( $true_id ) {
+			$query = 'DELETE FROM plan WHERE id = :id'; // Удаление категории из базы данных
+			try {
+				$tmp  = $this->connect->prepare( $query );
+				$args = array(
+					':id' => $id,
+				);
+				if ( ! $tmp->execute( $args ) ) {
+					return false;
+				}
+			} catch ( \PDOException $e ) {
+				echo 'Ошибка выполнения запроса ' . $e->getMessage();
+
+				return false;
+			}
+
+			unset( $this->categories[ $category_key ] ); // Удаление категории из поля объекта
+
+			return true;
+		}
+
+		return false;
 	}
 
 	public function set_sum(){ // Назначает сумму указанной категории
