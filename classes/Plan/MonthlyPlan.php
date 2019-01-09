@@ -242,4 +242,20 @@ class MonthlyPlan {
 
 		return $all_costs;
 	}
+
+	/* Форматирование данных для вывода в виде таблицы */
+	public function render() {
+		$count = 1;
+		$html  = '<table>' . PHP_EOL . '<tbody>' . PHP_EOL;
+		foreach ( $this->categories as $key => $category ) {
+			$html .= '<tr>' . PHP_EOL;
+			$html .= '<td>' . $count++ . '</td>' . PHP_EOL;
+			$html .= '<td>' . $category['category'] . '</td>' . PHP_EOL;
+			$html .= '<td>' . $category['sum'] . '</td>' . PHP_EOL;
+			$html .= '</tr>' . PHP_EOL;
+		}
+		$html .= '</tbody>' . PHP_EOL . '</table>' . PHP_EOL;
+
+		return $html;
+	}
 }
