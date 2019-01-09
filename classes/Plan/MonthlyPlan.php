@@ -143,7 +143,90 @@ class MonthlyPlan {
 		return false;
 	}
 
-	public function copy_previous_plan(){ // Копирует план с предыдущего месяца
+	public function copy_previous_plan() { // Копирует план с предыдущего месяца
+		$temp_categories = null;
+		$previous_date   = $this->previous_date(); //Получаю предыдущий месяц
 
+		/* Очищаю список категорий этого месяца */
+		$query = 'DELETE FROM plan WHERE date = :date'; // Удаление категории из базы данных
+		try {
+			$tmp  = $this->connect->prepare( $query );
+			$args = array(
+				':date' => $this->date,
+			);
+			if ( ! $tmp->execute( $args ) ) {
+				return false;
+			}
+		} catch ( \PDOException $e ) {
+			echo 'Ошибка выполнения запроса ' . $e->getMessage();
+
+			return false;
+		}
+		unset( $this->categories ); // Очищаю список категорий объекта
+		/* /Очищаю список категорий этого месяца */
+
+		/* Получаю список категорий прошлого месяца */
+		$this->connect = ConnectDB::connect();
+		$query         = 'SELECT * FROM plan WHERE date = :date';
+
+		try {
+			$tmp = $this->connect->prepare( $query );
+			if ( ! $tmp->execute( [ ':date' => $previous_date ] ) ) {
+				return false;
+			}
+			$temp_categories = $tmp->fetchAll( \PDO::FETCH_ASSOC );
+		} catch ( \PDOException $e ) {
+			echo 'Ошибка выполнения запроса приполучении списка категорий прошлого месяца ' . $e->getMessage();
+
+			return false;
+		}
+		/* /Получаю список категорий прошлого месяца */
+
+		/* Создаю копии категорий для этого месяца */
+		foreach ( $temp_categories as $key => $category ) {
+			$query = 'INSERT INTO plan ( category, sum, date ) VALUES ( :category, :sum, :date ) RETURNING id';
+			$args  = array(
+				':category' => $category['category'],
+				':sum'      => $category['sum'],
+				':date'     => $this->date,
+			);
+
+			try {
+				$tmp = $this->connect->prepare( $query );
+				if ( ! $tmp->execute( $args ) ) {
+					return false;
+				}
+				$id                 = $tmp->fetchAll( \PDO::FETCH_ASSOC )[0]['id'];
+				$this->categories[] = array(
+					'id'       => $id,
+					'category' => $category['category'],
+					'sum'      => $category['sum'],
+					'date'     => $this->date,
+				);
+			} catch ( \PDOException $e ) {
+				echo 'Ошибка выполнения запроса при копировании категорий ' . $e->getMessage();
+
+				return false;
+			}
+		}
+
+		/* /Создаю копии категорий для этого месяца */
+
+		return true;
+	}
+
+	/* Получение даты предыдущего месяца */
+	public function previous_date() {
+		$previous_month = null;
+		$previous_year  = null;
+
+		$date_arr = explode( '-', $this->date );
+		list( $month, $year ) = $date_arr;
+
+		if ( '01' === $month ) {
+			return '12-' . -- $year;
+		} else {
+			return -- $month . '-' . $year;
+		}
 	}
 }
