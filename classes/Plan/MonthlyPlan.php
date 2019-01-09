@@ -229,4 +229,17 @@ class MonthlyPlan {
 			return -- $month . '-' . $year;
 		}
 	}
+
+	/* Подсчёт суммы расходов */
+	/**
+	 * @return float
+	 */
+	public function get_amount_of_expenses(): float {
+		$all_costs = null;
+		foreach ( $this->categories as $category ) {
+			$all_costs += $category['sum'];
+		}
+
+		return $all_costs;
+	}
 }
