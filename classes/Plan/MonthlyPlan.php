@@ -243,10 +243,17 @@ class MonthlyPlan {
 		return $all_costs;
 	}
 
+	/**
+	 * @return array
+	 */
+	public function getCategories(): array {
+		return $this->categories;
+	}
+
 	/* Форматирование данных для вывода в виде таблицы */
 	public function render() {
 		$count = 1;
-		$html  = '<table>' . PHP_EOL . '<tbody>' . PHP_EOL;
+		$html  = '<table border="1" cellspacing="0" width="400px">' . PHP_EOL . '<tbody>' . PHP_EOL;
 		foreach ( $this->categories as $key => $category ) {
 			$html .= '<tr>' . PHP_EOL;
 			$html .= '<td>' . $count++ . '</td>' . PHP_EOL;
