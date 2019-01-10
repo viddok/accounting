@@ -133,6 +133,14 @@ class Expenses {
 			$html .= '<td>' . ($category['allocated_amount'] - $category['amount_spent']) . '</td>' . PHP_EOL;
 			$html .= '</tr>' . PHP_EOL;
 		}
+		$html .= '<tr style="font-weight: bold;">' . PHP_EOL;
+		$html .= '<td>-</td>' . PHP_EOL;
+		$html .= '<td style="text-align: left">Итого</td>' . PHP_EOL;
+		$html .= '<td>' . $this->some_total_amount( 'estimated_amount' ) . '</td>' . PHP_EOL;
+		$html .= '<td>' . $this->some_total_amount( 'allocated_amount' ) . '</td>' . PHP_EOL;
+		$html .= '<td>' . $this->some_total_amount( 'amount_spent' ) . '</td>' . PHP_EOL;
+		$html .= '<td>' . ( $this->some_total_amount( 'allocated_amount' ) - $this->some_total_amount( 'amount_spent' ) ). '</td>' . PHP_EOL;
+		$html .= '</tr>' . PHP_EOL;
 		$html .= '</tbody>' . PHP_EOL . '</table>' . PHP_EOL;
 
 		return $html;
