@@ -10,7 +10,7 @@ $plan = new MonthlyPlan();
 if ( isset( $_POST['operation'] ) ) {
     if ( 'set-sum' === $_POST['operation'] ) { // Добавляю категорию
 	    if ( '' !== $_POST['sum'] && is_numeric( $_POST['sum'] ) ) {
-		    $plan->set_sum( $_POST['category-id'], $_POST['sum'] );
+		    $plan->set_estimated_amount( $_POST['category-id'], $_POST['sum'] );
 
 		    header( 'location: monthly-plan.php' );
 		    exit();
@@ -87,7 +87,7 @@ if ( isset( $_POST['operation'] ) ) {
                         <select name="category-id">
 							<?php
 							foreach ( $plan->getCategories() as $category ) {
-								echo "<option value='{$category['id']}'>{$category['category']}</option>";
+								echo "<option value='{$category['id']}'>{$category['title']}</option>";
 							}
 							?>
                         </select>
@@ -121,7 +121,7 @@ if ( isset( $_POST['operation'] ) ) {
                         <select name="category-id">
 					        <?php
 					        foreach ( $plan->getCategories() as $category ) {
-						        echo "<option value='{$category['id']}'>{$category['category']}</option>";
+						        echo "<option value='{$category['id']}'>{$category['title']}</option>";
 					        }
 					        ?>
                         </select>

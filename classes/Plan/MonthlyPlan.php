@@ -25,7 +25,7 @@ class MonthlyPlan {
 		$this->connect = ConnectDB::connect();
 
 		try {
-			$query = 'SELECT * FROM plan WHERE date = :date ORDER BY id';
+			$query = 'SELECT * FROM expenses WHERE date = :date ORDER BY id';
 			$tmp = $this->connect->prepare( $query );
 			$tmp->execute( [':date' => $this->date] );
 			$this->categories = $tmp->fetchAll( \PDO::FETCH_ASSOC );
@@ -34,24 +34,24 @@ class MonthlyPlan {
 		}
 	}
 
-	public function add_category( string $title, float $sum ): bool { // Добавляет новую категорию
+	public function add_category( string $title, float $estimated_amount ): bool { // Добавляет новую категорию
 		$id   = null;
 		$copy = false;
 
 		foreach ( $this->categories as $category ) { // Проверка на добавление дубликата
-			if ( $category['category'] === $title && $category['sum'] == $sum && $category['date'] === $this->date ) {
+			if ( $category['title'] === $title && $category['estimated_amount'] == $estimated_amount && $category['date'] === $this->date ) {
 				$copy = true;
 			}
 		}
 
 		if ( ! $copy ) {
-			$query = 'INSERT INTO plan ( category, sum, date ) VALUES ( :category, :sum, :date ) RETURNING id';// Добавление категории в базу данных и получаем id
+			$query = 'INSERT INTO expenses ( title, estimated_amount, date ) VALUES ( :title, :estimated_amount, :date ) RETURNING id';// Добавление категории в базу данных и получаем id
 			try {
 				$tmp  = $this->connect->prepare( $query );
 				$args = array(
-					':category' => htmlspecialchars( $title ),
-					':sum'      => $sum,
-					':date'     => $this->date,
+					':title'            => htmlspecialchars( $title ),
+					':estimated_amount' => $estimated_amount,
+					':date'             => $this->date,
 				);
 				if ( ! $tmp->execute( $args ) ) {
 					return false;
@@ -67,8 +67,8 @@ class MonthlyPlan {
 			$number                      = count( $this->categories );
 			$this->categories[ $number ] = array(
 				'id'       => $id,
-				'category' => $title,
-				'sum'      => $sum,
+				'title' => $title,
+				'estimated_amount'      => $estimated_amount,
 				'date'     => $this->date,
 			);
 
@@ -82,6 +82,7 @@ class MonthlyPlan {
 		$true_id      = false; //статус наличия удаляемой категории
 		$category_key = null; // ключ удаляемой категории
 
+
 		foreach ( $this->categories as $key => $category ) { // Проверка на добавление дубликата
 			if ( $category['id'] == $id ) {
 				$true_id      = true;
@@ -90,7 +91,7 @@ class MonthlyPlan {
 		}
 
 		if ( $true_id ) {
-			$query = 'DELETE FROM plan WHERE id = :id'; // Удаление категории из базы данных
+			$query = 'DELETE FROM expenses WHERE id = :id'; // Удаление категории из базы данных
 			try {
 				$tmp  = $this->connect->prepare( $query );
 				$args = array(
@@ -113,14 +114,14 @@ class MonthlyPlan {
 		return false;
 	}
 
-	public function set_sum( int $id, float $sum ): bool { // Назначает сумму указанной категории
+	public function set_estimated_amount( int $id, float $estimated_amount ): bool { // Назначает сумму указанной категории
 
 		foreach ( $this->categories as $key => $category ) {
 			if ( $category['id'] == $id ) { // Проверка Наличия категории
-				$query = 'UPDATE plan SET sum = :sum WHERE id = :id';
+				$query = 'UPDATE expenses SET estimated_amount = :estimated_amount WHERE id = :id';
 				$args  = array(
 					':id'  => $id,
-					':sum' => $sum,
+					':estimated_amount' => $estimated_amount,
 				);
 
 				try {
@@ -134,7 +135,7 @@ class MonthlyPlan {
 					return false;
 				}
 
-				$this->categories[ $key ]['sum'] = $sum; // Обновление суммы в объекте
+				$this->categories[ $key ]['estimated_amount'] = $estimated_amount; // Обновление суммы в объекте
 
 				return true;
 			}
@@ -148,7 +149,7 @@ class MonthlyPlan {
 		$previous_date   = $this->previous_date(); //Получаю предыдущий месяц
 
 		/* Очищаю список категорий этого месяца */
-		$query = 'DELETE FROM plan WHERE date = :date'; // Удаление категории из базы данных
+		$query = 'DELETE FROM expenses WHERE date = :date'; // Удаление категории из базы данных
 		try {
 			$tmp  = $this->connect->prepare( $query );
 			$args = array(
@@ -167,7 +168,7 @@ class MonthlyPlan {
 
 		/* Получаю список категорий прошлого месяца */
 		$this->connect = ConnectDB::connect();
-		$query         = 'SELECT * FROM plan WHERE date = :date';
+		$query         = 'SELECT * FROM expenses WHERE date = :date';
 
 		try {
 			$tmp = $this->connect->prepare( $query );
@@ -184,10 +185,10 @@ class MonthlyPlan {
 
 		/* Создаю копии категорий для этого месяца */
 		foreach ( $temp_categories as $key => $category ) {
-			$query = 'INSERT INTO plan ( category, sum, date ) VALUES ( :category, :sum, :date ) RETURNING id';
+			$query = 'INSERT INTO expenses ( title, estimated_amount, date ) VALUES ( :title, :estimated_amount, :date ) RETURNING id';
 			$args  = array(
-				':category' => $category['category'],
-				':sum'      => $category['sum'],
+				':title' => $category['title'],
+				':estimated_amount'      => $category['estimated_amount'],
 				':date'     => $this->date,
 			);
 
@@ -199,8 +200,8 @@ class MonthlyPlan {
 				$id                 = $tmp->fetchAll( \PDO::FETCH_ASSOC )[0]['id'];
 				$this->categories[] = array(
 					'id'       => $id,
-					'category' => $category['category'],
-					'sum'      => $category['sum'],
+					'title' => $category['title'],
+					'estimated_amount'      => $category['estimated_amount'],
 					'date'     => $this->date,
 				);
 			} catch ( \PDOException $e ) {
@@ -237,8 +238,10 @@ class MonthlyPlan {
 	public function get_amount_of_expenses(): float {
 		$all_costs = null;
 		foreach ( $this->categories as $category ) {
-			$all_costs += $category['sum'];
+			$all_costs += $category['estimated_amount'];
 		}
+
+		$all_costs = (null === $all_costs) ? 0 : $all_costs;
 
 		return $all_costs;
 	}
@@ -257,8 +260,8 @@ class MonthlyPlan {
 		foreach ( $this->categories as $key => $category ) {
 			$html .= '<tr>' . PHP_EOL;
 			$html .= '<td>' . $count++ . '</td>' . PHP_EOL;
-			$html .= '<td>' . $category['category'] . '</td>' . PHP_EOL;
-			$html .= '<td>' . $category['sum'] . '</td>' . PHP_EOL;
+			$html .= '<td>' . $category['title'] . '</td>' . PHP_EOL;
+			$html .= '<td>' . $category['estimated_amount'] . '</td>' . PHP_EOL;
 			$html .= '</tr>' . PHP_EOL;
 		}
 		$html .= '</tbody>' . PHP_EOL . '</table>' . PHP_EOL;
