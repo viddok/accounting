@@ -8,6 +8,7 @@
 
 namespace classes\Expenses;
 
+use classes\Accounts\Account\Account;
 use classes\Connect\ConnectDB;
 
 class Expenses {
@@ -67,7 +68,7 @@ class Expenses {
 		return false;
 	}
 
-	public function add_purchase(int $id, int $cost): bool{
+	public function add_purchase(int $id, int $account_id, int $cost, string $description): bool{
 		foreach ( $this->categories as $key => $category ) {
 			if ( $category['id'] == $id ) { // Проверка Наличия категории
 
@@ -91,6 +92,9 @@ class Expenses {
 
 				$this->categories[ $key ]['amount_spent'] = $amount_spent; // Обновление суммы в объекте
 
+				$account = Account::get_account( $account_id );
+				$account->withdraw_from_account( $cost, htmlspecialchars( $description ) );
+
 				return true;
 			}
 		}
@@ -108,7 +112,8 @@ class Expenses {
 	/* Форматирование данных для вывода в виде таблицы */
 	public function render() {
 		$count = 1;
-		$html  = '<table border="1" cellspacing="0" width="800px">' . PHP_EOL . '<tbody>' . PHP_EOL;
+
+		$html  = '<table border="1" cellspacing="0" cellpadding="2px" style="text-align: center" <!--width="100%"-->' . PHP_EOL . '<tbody>' . PHP_EOL;
 		$html .= '<tr>' . PHP_EOL;
 		$html .= '<td>№</td>' . PHP_EOL;
 		$html .= '<td>Категория расходов</td>' . PHP_EOL;
@@ -116,13 +121,12 @@ class Expenses {
 		$html .= '<td>Выделенная сумма</td>' . PHP_EOL;
 		$html .= '<td>Потрачено</td>' . PHP_EOL;
 		$html .= '<td>Остаток</td>' . PHP_EOL;
-
 		$html .= '</tr>' . PHP_EOL;
 
 		foreach ( $this->categories as $key => $category ) {
 			$html .= '<tr>' . PHP_EOL;
 			$html .= '<td>' . $count++ . '</td>' . PHP_EOL;
-			$html .= '<td>' . $category['title'] . '</td>' . PHP_EOL;
+			$html .= '<td style="text-align: left">' . $category['title'] . '</td>' . PHP_EOL;
 			$html .= '<td>' . $category['estimated_amount'] . '</td>' . PHP_EOL;
 			$html .= '<td>' . $category['allocated_amount'] . '</td>' . PHP_EOL;
 			$html .= '<td>' . $category['amount_spent'] . '</td>' . PHP_EOL;
@@ -132,6 +136,24 @@ class Expenses {
 		$html .= '</tbody>' . PHP_EOL . '</table>' . PHP_EOL;
 
 		return $html;
+	}
+
+	/**
+	 * @param string $type_amount
+	 *
+	 * @return mixed
+	 */
+	protected function some_total_amount( string $type_amount ) {
+		$total_amount = null;
+		if ( 'estimated_amount' === $type_amount || 'allocated_amount' === $type_amount || 'amount_spent' === $type_amount ) {
+			foreach ( $this->categories as $category ) {
+				$total_amount += $category[ $type_amount ];
+			}
+
+			return $total_amount;
+		}
+
+		return false;
 	}
 
 }
