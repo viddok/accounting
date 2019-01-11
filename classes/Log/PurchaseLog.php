@@ -58,7 +58,7 @@ class PurchaseLog {
 		$connect = ConnectDB::connect();
 
 		/* Возвращение средств на счёт */
-		$query = 'SELECT account_id, sum FROM purchases_log WHERE id = :id';
+		$query = 'SELECT account_id, category_id, sum FROM purchases_log WHERE id = :id';
 
 		try {
 			$tmp = $connect->prepare( $query );
@@ -80,6 +80,33 @@ class PurchaseLog {
 		$account->top_up_account( $log['sum'], 'Отмена покупки' );
 		/* /Возвращение средств на счёт */
 
+		/* Корректировка потраченной суммы в расходах */
+		$query_select = 'SELECT amount_spent FROM expenses WHERE id = :id'; // Запрос для получения текущей суммы потраченных денег
+		$query_update = 'UPDATE expenses SET amount_spent = :amount_spent WHERE id = :id'; // Запрос для обновления суммы потраченных денег
+
+		try {
+			$tmp = $connect->prepare( $query_select );
+			if ( ! $tmp->execute( [ ':id' => $log['category_id'] ] ) ) {
+				return false;
+			}
+			$category = $tmp->fetch( \PDO::FETCH_ASSOC );
+			if ( ! $category ) {
+				return false;
+			}
+
+			$amount_spent = $category['amount_spent'] - $log['sum']; // Корректировка суммы потраченных денег
+
+			$tmp = $connect->prepare( $query_update );
+			if ( ! $tmp->execute( [ ':id' => $log['category_id'], ':amount_spent' => $amount_spent ] ) ) {
+				return false;
+			}
+		} catch ( \PDOException $e ) {
+			echo 'Ошибка выполнения запроса ' . $e->getMessage();
+
+			return false;
+		}
+		/* /Корректировка потраченной суммы в расходах */
+
 		/* Удаление лога из базы данных */
 		$query = 'DELETE FROM purchases_log WHERE id = :id';
 
@@ -93,6 +120,8 @@ class PurchaseLog {
 
 			return false;
 		}
+
+		/* /Удаление лога из базы данных */
 
 		return true;
 	}
