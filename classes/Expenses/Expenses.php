@@ -10,6 +10,7 @@ namespace classes\Expenses;
 
 use classes\Accounts\Account\Account;
 use classes\Connect\ConnectDB;
+use classes\Log\PurchaseLog;
 
 class Expenses {
 	protected $categories;
@@ -94,6 +95,8 @@ class Expenses {
 
 				$account = Account::get_account( $account_id );
 				$account->withdraw_from_account( $cost, $description );
+
+				PurchaseLog::add_log( $account_id, $_SESSION['current_user']['id'], $id, $cost, $description );
 
 				return true;
 			}
