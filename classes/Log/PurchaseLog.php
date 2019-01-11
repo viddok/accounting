@@ -96,4 +96,64 @@ class PurchaseLog {
 
 		return true;
 	}
+
+	/**
+	 * @param string $category
+	 * @param string $date
+	 * @param int $quantity
+	 *
+	 * @return mixed
+	 */
+	public static function get_log( string $date = 'current_month', string $category = '', int $quantity = 30 ) {
+		$connect = ConnectDB::connect();
+
+		$query = 'SELECT
+						purchases_log.id AS id,
+						purchases_log.date,
+						users.name AS user_name,
+						accounts.name AS account_title,
+						expenses.title AS category_title,
+						sum,
+						description
+					FROM purchases_log
+					INNER JOIN users ON purchases_log.user_id = users.id
+					INNER JOIN accounts ON purchases_log.account_id = accounts.id
+					INNER JOIN expenses ON purchases_log.category_id = expenses.id';
+
+		if ( 'current_month' === $date ) {
+			$date  = date( 'm-Y' );
+			$where = ' WHERE purchases_log.date LIKE \'__-' . $date . '\'';
+		} else {
+			$pattern = '~[0-3][0-9]-20[1-2][0-9]~';
+			if ( 1 != preg_match( $pattern, $date ) ) {
+				return false;
+			}
+			$where = ' WHERE purchases_log.date LIKE \'__-' . $date . '\'';
+		}
+
+		if ( '' !== $category && is_numeric( $category ) ) {
+			$where .= ' AND category_id = ' . $category;
+		}
+
+		$limit = '';
+		if ( is_numeric( $quantity ) ) {
+			$limit = ' LIMIT ' . $quantity;
+		}
+
+		$query .= $where . 'ORDER BY purchases_log.id DESC' . $limit;
+
+		try {
+			$tmp = $connect->query( $query );
+			$log = $tmp->fetchAll( \PDO::FETCH_ASSOC );
+			if ( ! $log ) {
+				return false;
+			}
+		} catch ( \PDOException $e ) {
+			echo 'Ошибка выполнения запроса ' . $e->getMessage();
+
+			return false;
+		}
+
+		return $log;
+	}
 }
