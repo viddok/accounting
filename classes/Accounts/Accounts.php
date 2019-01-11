@@ -39,6 +39,16 @@ class Accounts {
 		}
 	}
 
+	public function get_total_amount(): int {
+		$total_amount = null;
+		foreach ( $this->collection as $account ) {
+			/** @var $account Account */
+			$total_amount += $account->getBalance();
+		}
+
+		return (int) $total_amount;
+	}
+
 	/**
 	 * @return mixed
 	 */
