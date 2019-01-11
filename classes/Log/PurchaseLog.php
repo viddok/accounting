@@ -9,6 +9,7 @@
 namespace classes\Log;
 
 use classes\Connect\ConnectDB;
+use classes\Accounts\Account\Account;
 
 class PurchaseLog {
 
@@ -39,6 +40,54 @@ class PurchaseLog {
 		try {
 			$tmp = $connect->prepare( $query );
 			$tmp->execute( $args );
+		} catch ( \PDOException $e ) {
+			echo 'Ошибка выполнения запроса ' . $e->getMessage();
+
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * @param int $id
+	 *
+	 * @return bool
+	 */
+	public static function del_log( int $id ): bool {
+		$connect = ConnectDB::connect();
+
+		/* Возвращение средств на счёт */
+		$query = 'SELECT account_id, sum FROM purchases_log WHERE id = :id';
+
+		try {
+			$tmp = $connect->prepare( $query );
+			if ( ! $tmp->execute( [ ':id' => $id ] ) ) {
+				return false;
+			}
+			$log = $tmp->fetch( \PDO::FETCH_ASSOC );
+			if ( ! $log ) {
+				return false;
+			}
+		} catch ( \PDOException $e ) {
+			echo 'Ошибка выполнения запроса ' . $e->getMessage();
+
+			return false;
+		}
+
+
+		$account = Account::get_account( $log['account_id'] );
+		$account->top_up_account( $log['sum'], 'Отмена покупки' );
+		/* /Возвращение средств на счёт */
+
+		/* Удаление лога из базы данных */
+		$query = 'DELETE FROM purchases_log WHERE id = :id';
+
+		try {
+			$tmp = $connect->prepare( $query );
+			if ( ! $tmp->execute( [ ':id' => $id ] ) ) {
+				return false;
+			}
 		} catch ( \PDOException $e ) {
 			echo 'Ошибка выполнения запроса ' . $e->getMessage();
 
