@@ -55,10 +55,7 @@ class Account {
 			$description1 = "Перевод со счёта: {$user->getName()}/$this->title.";
 			$result_1st_operation = $account->top_up_account( $sum, $description1 );
 
-			$user = User::create_user( $account->getUserId() );
-			$description2 = "Перевод на счёт {$user->getName()}/{$account->getTitle()}. Коммисия: $commission грн";
-
-			$result_2nd_operation = $this->withdraw_from_account( $sum + $commission, $description2 );
+			$result_2nd_operation = $this->withdraw_from_account( $sum + $commission );
 			if ( true === $result_1st_operation && true === $result_2nd_operation ) {
 				return true;
 			}
@@ -121,24 +118,14 @@ class Account {
 		return false;
 	}
 
-	public function withdraw_from_account( $sum, string $description ) {
-		if ( is_numeric( $sum ) && $sum > 0 && $this->balance > $sum ) {
+	public function withdraw_from_account( $sum ) {
+		if ( is_numeric( $sum ) && $sum > 0 && $this->balance >= $sum ) {
 				$this->balance -= $sum;
 				$connect       = ConnectDB::connect();
 
 				$query = 'UPDATE accounts SET balance = ? WHERE id = ?';
 				$accnt = $connect->prepare( $query );
 				$accnt->execute( [ $this->balance, $this->id ] );
-
-			/*$action = array(
-				'account_id' => $this->id,
-				'user_id' => $this->user_id,
-				'operation' => 'Списание средств',
-				'sum' => $sum,
-				'description' => $description,
-				'date' => date('d-m-Y'),
-			);
-			AccountLog::addLog($action);*/
 
 				return true;
 		}

@@ -94,7 +94,7 @@ class Expenses {
 				$this->categories[ $key ]['amount_spent'] = $amount_spent; // Обновление суммы в объекте
 
 				$account = Account::get_account( $account_id );
-				$account->withdraw_from_account( $cost, $description );
+				$account->withdraw_from_account( $cost );
 
 				PurchaseLog::add_log( $account_id, $_SESSION['current_user']['id'], $id, $cost, $description );
 
