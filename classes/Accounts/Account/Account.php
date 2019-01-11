@@ -130,15 +130,15 @@ class Account {
 				$accnt = $connect->prepare( $query );
 				$accnt->execute( [ $this->balance, $this->id ] );
 
-				$action = array(
-					'account_id' => $this->id,
-					'user_id' => $this->user_id,
-					'operation' => 'Списание средств',
-					'sum' => $sum,
-					'description' => $description,
-					'date' => date('d-m-Y'),
-				);
-				AccountLog::addLog($action);
+			/*$action = array(
+				'account_id' => $this->id,
+				'user_id' => $this->user_id,
+				'operation' => 'Списание средств',
+				'sum' => $sum,
+				'description' => $description,
+				'date' => date('d-m-Y'),
+			);
+			AccountLog::addLog($action);*/
 
 				return true;
 		}
