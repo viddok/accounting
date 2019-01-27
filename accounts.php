@@ -15,7 +15,10 @@ use classes\Users\User\User;
 use classes\Log\AccountLog;
 
 /** @var string */
-$errors = null;
+$errors = array(
+	'',
+	'Ошибка создания перевода, проверьте вводимые данные и наличие средств на счету',
+);
 
 if ( isset( $_POST['user_id'] ) && 1 === count( $_POST ) ) {
 	$accounts[] = Account::get_account( $_POST['user_id'] );
@@ -24,9 +27,12 @@ if ( isset( $_POST['user_id'] ) && 1 === count( $_POST ) ) {
 // Обработка денежного перевода
 if ( isset( $_POST['account_1st'] ) && isset( $_POST['account_2nd'] ) && isset( $_POST['sum'] ) && is_numeric( $_POST['sum'] ) ) {
 	$account = Account::get_account( $_POST['account_1st'] );
-	$account->money_order( $_POST['account_2nd'], $_POST['sum'] );
+	if ( $account->money_order( $_POST['account_2nd'], $_POST['sum'] ) ) {
+		header( 'location: accounts.php' );
+	} else {
+		header( 'location: accounts.php?error_code=1' );
+	}
 
-	header( 'location: accounts.php' );
 	exit();
 }
 
@@ -133,6 +139,10 @@ $log = new AccountLog();
 	    <?php require_once 'templates/main-menu.php'; ?>
 
         <div class="container">
+	        <?php if ( isset( $_GET['error_code'] ) && 0 != $_GET['error_code'] ) {
+		        echo '<span class="error">' . $errors[ $_GET['error_code'] ] . '.</span>';
+	        }
+	        ?>
 
             <div class="block">
                 <table border="1" cellspacing="0" width="400px">
