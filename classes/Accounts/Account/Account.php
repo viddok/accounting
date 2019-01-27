@@ -49,7 +49,7 @@ class Account {
 	}
 
 	public function money_order( $id, $sum, $commission = 0 ) {
-		if ( is_numeric( $id ) && is_numeric( $sum ) ) {
+		if ( is_numeric( $id ) && is_numeric( $sum ) && ( $this->balance >= $sum ) ) {
 			$account              = self::get_account( $id );
 			$user = User::create_user( $this->user_id );
 			$description1 = "Перевод со счёта: {$user->getName()}/$this->title.";
