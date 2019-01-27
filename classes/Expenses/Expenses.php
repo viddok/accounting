@@ -71,7 +71,12 @@ class Expenses {
 
 	public function add_purchase(int $id, int $account_id, int $cost, string $description): bool{
 		foreach ( $this->categories as $key => $category ) {
-			if ( $category['id'] == $id ) { // Проверка Наличия категории
+			$account = Account::get_account( $account_id );
+			if ( $account->getBalance() < $cost ) {
+				return false;
+			}
+
+			if ( $category['id'] == $id ) { // Проверка наличия категории расходов
 
 				$query = 'UPDATE expenses SET amount_spent = :amount_spent WHERE id = :id';
 				$amount_spent = $this->categories[ $key ]['amount_spent'] + $cost;
@@ -93,7 +98,7 @@ class Expenses {
 
 				$this->categories[ $key ]['amount_spent'] = $amount_spent; // Обновление суммы в объекте
 
-				$account = Account::get_account( $account_id );
+
 				$account->withdraw_from_account( $cost );
 
 				PurchaseLog::add_log( $account_id, $_SESSION['current_user']['id'], $id, $cost, $description );
@@ -154,7 +159,7 @@ class Expenses {
 	 *
 	 * @return mixed
 	 */
-	protected function some_total_amount( string $type_amount ) {
+	public function some_total_amount( string $type_amount ) {
 		$total_amount = null;
 		if ( 'estimated_amount' === $type_amount || 'allocated_amount' === $type_amount || 'amount_spent' === $type_amount ) {
 			foreach ( $this->categories as $category ) {
