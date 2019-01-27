@@ -25,6 +25,8 @@ h4 {
     border-radius: 5px;
     background-color: #f0a3a3;
     font-weight: bold;
+    display: inline-block;
+    margin-bottom: 20px;
 }
 .top-menu {
     text-align: center;
