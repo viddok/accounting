@@ -62,6 +62,11 @@ if ( isset( $_POST['operation'] ) ) {
 			<h2>Расходы за этот месяц</h2>
 			<div class="block">
                 <div style="margin-bottom: 1em;"><b>Доступная сумма: <u><?php echo $accounts->get_total_amount(); ?></u></b></div>
+                <div style="margin-bottom: 1em;">
+                    <b>Нераспределённая сумма:
+                        <u><?php echo $accounts->get_total_amount() - ( $expenses->some_total_amount( 'allocated_amount' ) - $expenses->some_total_amount( 'amount_spent' ) ); ?></u>
+                    </b>
+                </div>
                 <h4>Категории расходов</h4>
                 <?php echo $expenses->render();	?>
 			</div>
@@ -83,12 +88,16 @@ if ( isset( $_POST['operation'] ) ) {
 			                <?php
 			                foreach ( $accounts->getCollection() as $account ) {
 				                /* @var $account Account */
+				                $selected = '';
+				                if ( $account->getTitle() === 'Кошелёк' ) {
+					                $selected = 'selected';
+				                }
 				                $user = User::create_user( $account->getUserId() );
 				                if ( is_admin() ) {
 					                echo "<option value='{$account->getId()}'>{$account->getTitle()}</option>";
 				                } else {
 					                if ( $_SESSION['current_user']['id'] === $user->getId() ) {
-						                echo "<option value='{$account->getId()}'>{$account->getTitle()}</option>";
+						                echo "<option value='{$account->getId()}' $selected>{$account->getTitle()}</option>";
 					                }
 				                }
 			                }
