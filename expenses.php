@@ -3,29 +3,40 @@ session_start();
 require_once 'func.php';
 forwarding_auth();
 
-use classes\Expenses\Expenses;
-use classes\Accounts\Accounts;
 use classes\Accounts\Account\Account;
+use classes\Accounts\Accounts;
+use classes\Expenses\Expenses;
 use classes\Users\User\User;
 
 $expenses = new Expenses();
 $accounts = Accounts::create_collection();
+$errors   = array(
+	'',
+	'Ошибка создания покупки, проверьте наличие средств на счету',
+	'Ошибка выделения средст, проверьте наличие средств на счету.'
+);
 
 if ( isset( $_POST['operation'] ) ) {
 	if ( 'set_allocated_amount' === $_POST['operation'] ) { // Добавляю категорию
 		if ( '' !== $_POST['sum'] && is_numeric( $_POST['sum'] ) ) {
-			$expenses->set_allocated_amount( $_POST['category-id'], $_POST['sum'], $_POST['type_operation'] );
-
-			header( 'location: expenses.php' );
+			$set_allocated_amount_result = $expenses->set_allocated_amount( $_POST['category-id'], $_POST['sum'], $_POST['type_operation'] );
+			if ( $set_allocated_amount_result ) {
+				header( 'location: expenses.php' );
+			} else {
+				header( 'location: expenses.php?error_code=2' );
+			}
 			exit();
 		}
 	}
 
 	if ( 'add_purchase' === $_POST['operation'] ) { // Добавляю категорию
 		if ( '' !== $_POST['sum'] && is_numeric( $_POST['sum'] ) ) {
-			$expenses->add_purchase( $_POST['category-id'], $_POST['account_id'], $_POST['sum'], $_POST['description'] );
-
-			header( 'location: expenses.php' );
+			$add_purchase_result = $expenses->add_purchase( $_POST['category-id'], $_POST['account_id'], $_POST['sum'], $_POST['description'] );
+			if ( $add_purchase_result ) {
+				header( 'location: expenses.php' );
+			} else {
+				header( 'location: expenses.php?error_code=1' );
+			}
 			exit();
 		}
 	}
@@ -59,6 +70,10 @@ if ( isset( $_POST['operation'] ) ) {
 		<?php require_once 'templates/main-menu.php'; ?>
 
 		<div class="container">
+			<?php if ( isset( $_GET['error_code'] ) && 0 != $_GET['error_code'] ) {
+				echo '<span class="error">' . $errors[ $_GET['error_code'] ] . '.</span>';
+			}
+			?>
 			<h2>Расходы за этот месяц</h2>
 			<div class="block">
                 <div style="margin-bottom: 1em;"><b>Доступная сумма: <u><?php echo $accounts->get_total_amount(); ?></u></b></div>

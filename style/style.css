@@ -17,6 +17,15 @@ select {
 h4 {
     margin-bottom: 0.5em;
 }
+
+.error {
+    text-align: center;
+    border: solid 1px;
+    padding: 10px;
+    border-radius: 5px;
+    background-color: #f0a3a3;
+    font-weight: bold;
+}
 .top-menu {
     text-align: center;
     background-color: black;
