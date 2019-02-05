@@ -23,7 +23,7 @@ class AccountLog {
 					LEFT JOIN accounts ON accounts_log.account_id = accounts.id
 					LEFT JOIN users ON accounts_log.user_id = users.id
 					WHERE date LIKE \'%01-2019\'
-					ORDER BY accounts_log.id';
+					ORDER BY accounts_log.id DESC';
 		$tmp = $connect->query($query);
 		$this->log = $tmp->fetchAll(\PDO::FETCH_ASSOC);
 	}
