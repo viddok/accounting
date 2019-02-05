@@ -227,6 +227,9 @@ class MonthlyPlan {
 		if ( '01' === $month ) {
 			return '12-' . -- $year;
 		} else {
+			if ( $month < 10 ) {
+				return '0' . -- $month . '-' . $year;
+			}
 			return -- $month . '-' . $year;
 		}
 	}
@@ -255,6 +258,9 @@ class MonthlyPlan {
 
 	/* Форматирование данных для вывода в виде таблицы */
 	public function render() {
+		if ( empty( $this->categories ) ) {
+			$this->copy_previous_plan();
+		}
 		$count = 1;
 		$html  = '<table border="1" cellspacing="0" width="400px">' . PHP_EOL . '<tbody>' . PHP_EOL;
 		foreach ( $this->categories as $key => $category ) {
