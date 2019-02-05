@@ -25,8 +25,8 @@ class MonthlyPlan {
 		$this->connect = ConnectDB::connect();
 
 		try {
-			$query = 'SELECT * FROM expenses WHERE date = :date ORDER BY id';
-			$tmp = $this->connect->prepare( $query );
+			$query = 'SELECT * FROM expenses WHERE date = :date ORDER BY title';
+			$tmp   = $this->connect->prepare( $query );
 			$tmp->execute( [':date' => $this->date] );
 			$this->categories = $tmp->fetchAll( \PDO::FETCH_ASSOC );
 		} catch( \PDOException $e ) {
