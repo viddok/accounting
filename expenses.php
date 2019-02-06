@@ -93,7 +93,11 @@ if ( isset( $_POST['operation'] ) ) {
                         <select name="category-id">
 							<?php
 							foreach ( $expenses->getCategories() as $category ) {
-								echo "<option value='{$category['id']}'>{$category['title']}</option>";
+								$selected = '';
+								if ( $category['title'] === 'Питание' ) {
+									$selected = 'selected';
+								}
+								echo "<option value='{$category['id']}' $selected>{$category['title']}</option>";
 							}
 							?>
                         </select>
